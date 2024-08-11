@@ -5,10 +5,11 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import {ProductCard, ProductCardSkeleton} from "@/components/ProductCard"
 import { Suspense } from "react"
+import { cache } from "@/lib/cache"
 // function wait(duration:number){
 //     return new Promise(resolve=>setTimeout(resolve,duration))
 // }
-function getMostPopularProducts(){
+const getMostPopularProducts=cache(()=>{
     return db.product.findMany({
         where:{
             isAvailableForPurchase:true
@@ -21,8 +22,8 @@ function getMostPopularProducts(){
         take:6
     },
 )
-}
- function getNewestProducts(){
+},["/","getMostPopularProducts"],{revalidate:60*60})
+const getNewestProducts=cache(()=>{
     return db.product.findMany({
         where:{
             isAvailableForPurchase:true
@@ -33,7 +34,7 @@ function getMostPopularProducts(){
         take:6
     },
 )
-}
+},["/","getNewestProducts"],{revalidate:60})
 export default function Homepage(){
     return <main className="space-y-12">
         <ProductGridSection title="Most Popular" productsFetcher={getMostPopularProducts}/>
